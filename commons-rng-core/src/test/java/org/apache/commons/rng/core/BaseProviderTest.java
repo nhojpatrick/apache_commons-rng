@@ -16,9 +16,15 @@
  */
 package org.apache.commons.rng.core;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * Tests for {@link BaseProvider}.
@@ -29,19 +35,36 @@ import org.junit.Assume;
  * tests too).
  */
 public class BaseProviderTest {
-    @Test(expected = IllegalStateException.class)
+
+    @Test
     public void testStateSizeTooSmall() {
         final DummyGenerator dummy = new DummyGenerator();
         final int size = dummy.getStateSize();
         Assume.assumeTrue(size > 0);
-        dummy.restoreState(new RandomProviderDefaultState(new byte[size - 1]));
+
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                dummy.restoreState(new RandomProviderDefaultState(new byte[size - 1]));
+            }
+        };
+        final IllegalStateException thrown = assertThrows(IllegalStateException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("State size must be larger than 8 but was 7")));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testStateSizeTooLarge() {
         final DummyGenerator dummy = new DummyGenerator();
         final int size = dummy.getStateSize();
-        dummy.restoreState(new RandomProviderDefaultState(new byte[size + 1]));
+
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                dummy.restoreState(new RandomProviderDefaultState(new byte[size + 1]));
+            }
+        };
+        final IllegalStateException thrown = assertThrows(IllegalStateException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("State not fully recovered by subclasses")));
     }
 
     @Test
@@ -117,4 +140,5 @@ public class BaseProviderTest {
             super.fillState(state, seed);
         }
     }
+
 }
