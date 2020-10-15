@@ -16,15 +16,21 @@
  */
 package org.apache.commons.rng.core.source64;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
+
 import org.apache.commons.rng.core.RandomAssert;
 import org.apache.commons.rng.core.source64.TwoCmres.Cmres;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 import java.util.ArrayList;
 
-
 public class TwoCmresTest {
+
     @Test
     public void testAsymmetric() {
         final int index1 = 2;
@@ -110,16 +116,16 @@ public class TwoCmresTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testCmresFactoryThrowsWithDuplicateMultiplier() {
-        ArrayList<Cmres> list = new ArrayList<Cmres>();
+        final ArrayList<Cmres> list = new ArrayList<Cmres>();
         final long multiply = 0;
         final int rotate = 3;
         final int start = 5;
 
         list.add(new Cmres(multiply, rotate, start));
 
-        long nextMultiply = multiply + 1;
+        final long nextMultiply = multiply + 1;
         try {
             Cmres.Factory.checkUnique(list, nextMultiply);
         } catch (IllegalStateException ex) {
@@ -127,7 +133,16 @@ public class TwoCmresTest {
         }
 
         list.add(new Cmres(nextMultiply, rotate, start));
+
         // This should throw as the list now contains the multiply value
-        Cmres.Factory.checkUnique(list, nextMultiply);
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                Cmres.Factory.checkUnique(list, nextMultiply);
+            }
+        };
+        final IllegalStateException thrown = assertThrows(IllegalStateException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("Internal error: Please file a bug report")));
     }
+
 }
