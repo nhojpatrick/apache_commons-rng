@@ -16,10 +16,17 @@
  */
 package org.apache.commons.rng.core.source64;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
+
 import org.apache.commons.rng.core.RandomAssert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 public class XoRoShiRo128PlusPlusTest {
+
     /** The size of the array SEED. */
     private static final int SEED_SIZE = 2;
 
@@ -115,8 +122,16 @@ public class XoRoShiRo128PlusPlusTest {
      * and the abstract nextOutput() method should not be used. This test checks the method
      * throws an exception if used.
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNextOutputThrows() {
-        new XoRoShiRo128PlusPlus(SEED).nextOutput();
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                new XoRoShiRo128PlusPlus(SEED).nextOutput();
+            }
+        };
+        final UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("The PlusPlus algorithm redefines the next() method")));
     }
+
 }
