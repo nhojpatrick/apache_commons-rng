@@ -16,6 +16,11 @@
  */
 package org.apache.commons.rng.core.source32;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,8 +33,10 @@ import org.apache.commons.rng.core.RandomProviderDefaultState;
 import org.apache.commons.rng.core.util.NumberFactory;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 public class JDKRandomTest {
+
     /**
      * A class that is Serializable.
      * It contains member fields so there is something to serialize and malicious
@@ -105,8 +112,8 @@ public class JDKRandomTest {
      *
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    @Test(expected = IllegalStateException.class)
-    public void testRestoreWithInvalidClass() throws IOException  {
+    @Test
+    public void testRestoreWithInvalidClass() throws IOException {
         // Serialize something
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -124,7 +131,16 @@ public class JDKRandomTest {
         final RandomProviderDefaultState dummyState = new RandomProviderDefaultState(sizeAndState);
 
         final JDKRandom rng = new JDKRandom(13L);
+
         // This should throw
-        rng.restoreState(dummyState);
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                rng.restoreState(dummyState);
+            }
+        };
+        final IllegalStateException thrown = assertThrows(IllegalStateException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("Stream does not contain java.util.Random: org.apache.commons.rng.core.source32.JDKRandomTest$SerializableTestObject")));
     }
+
 }
