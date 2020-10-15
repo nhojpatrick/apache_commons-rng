@@ -16,8 +16,14 @@
  */
 package org.apache.commons.rng.examples.stress;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -27,6 +33,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Tests for {@link Hex}.
  */
 public class HexTest {
+
     /** Upper-case hex digits. */
     private static final char[] DIGITS = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
@@ -107,13 +114,28 @@ public class HexTest {
         Assert.assertArrayEquals(text.toLowerCase(Locale.US).toCharArray(), Hex.encodeHex(decoded));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testHexThrowsWithOddNumberOfCharacters() {
-        Hex.decodeHex("0");
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                Hex.decodeHex("0");
+            }
+        };
+        final IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("FIXME")));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testHexThrowsWithIllegalHexCharacters() {
-        Hex.decodeHex("0g");
+        // FIXME Simplification once upgraded to Java 1.8
+        final ThrowingRunnable testMethod = new ThrowingRunnable() {
+            public void run() {
+                Hex.decodeHex("0g");
+            }
+        };
+        final IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, testMethod);
+        assertThat(thrown.getMessage(), is(equalTo("FIXME")));
     }
+
 }
